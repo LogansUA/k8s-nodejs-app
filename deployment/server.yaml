@@ -20,6 +20,27 @@ spec:
         imagePullPolicy: Never # Do not pull image from publig registry
         ports:
         - containerPort: 3000
+        env:
+        - name: APP_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: server-env-vars
+              key: app.port
+        - name: TEST_ENV_VARIABLE
+          valueFrom:
+            configMapKeyRef:
+              name: server-env-vars
+              key: test.env.var
+        - name: SECRET_USERNAME 
+          valueFrom: 
+            secretKeyRef: 
+              name: server-env-secret
+              key: username 
+        - name: SECRET_PASSWORD 
+          valueFrom: 
+            secretKeyRef: 
+              name: server-env-secret 
+              key: password 
 
 ---
 

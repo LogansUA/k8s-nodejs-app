@@ -9,6 +9,9 @@ client.on('error', err => console.log('Redis Client Error', err));
 
 const server = http.createServer(async (req, res) => {
     console.log('Incomming request');
+    console.log(process.env.TEST_ENV_VARIABLE || '"TEST_ENV_VARIABLE" is not defined.');
+    console.log(process.env.SECRET_USERNAME || '"SECRET_USERNAME" is not defined.');
+    console.log(process.env.SECRET_PASSWORD || '"SECRET_PASSWORD" is not defined.');
     const { headers } = req;
 
     // Write all headers to Redis
@@ -31,7 +34,7 @@ process.on('SIGINT', () => {
     process.exit(0);
 });
 
-const port = 3000;
+const port = parseInt(process.env.APP_PORT) || 3000;
 
 client.connect()
     .then(() => {
