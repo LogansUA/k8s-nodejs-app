@@ -19,7 +19,36 @@ spec:
         image: logansua/k8s-test-app
         imagePullPolicy: Never # Do not pull image from publig registry
         ports:
-        - containerPort: 3000
+        - name: server-port # Named container port to use in liveness
+          containerPort: 3000
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            port: server-port
+            httpHeaders:
+              - name: k8s-liveness-header
+                value: Liveness
+          failureThreshold: 1
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: server-port
+            httpHeaders:
+              - name: k8s-health-header
+                value: Readiness
+          initialDelaySeconds: 1
+          periodSeconds: 5
+        startupProbe:
+          httpGet:
+            path: /health
+            port: server-port
+            httpHeaders:
+              - name: k8s-startup-header
+                value: Startup
+          failureThreshold: 30
+          periodSeconds: 5
         env:
         - name: APP_PORT
           valueFrom:
@@ -31,16 +60,21 @@ spec:
             configMapKeyRef:
               name: server-env-vars
               key: test.env.var
-        - name: SECRET_USERNAME 
-          valueFrom: 
-            secretKeyRef: 
+        - name: SECRET_USERNAME
+          valueFrom:
+            secretKeyRef:
               name: server-env-secret
-              key: username 
-        - name: SECRET_PASSWORD 
-          valueFrom: 
-            secretKeyRef: 
-              name: server-env-secret 
-              key: password 
+              key: username
+        - name: SECRET_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: server-env-secret
+              key: password
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: server-env-secret
+              key: redis.url
 
 ---
 
