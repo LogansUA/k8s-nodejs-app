@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-deployment
+  labels:
+    app: server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: server
+  template:
+    metadata:
+      labels:
+        app: server
+    spec:
+      containers:
+      - name: k8s-test-app
+        image: logansua/k8s-test-app
+        imagePullPolicy: Never # Do not pull image from publig registry
+        ports:
+        - name: server-port # Named container port to use in liveness
+          containerPort: 3000
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            port: server-port
+            httpHeaders:
+              - name: k8s-liveness-header
+                value: Liveness
+          failureThreshold: 1
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: server-port
+            httpHeaders:
+              - name: k8s-health-header
+                value: Readiness
+          initialDelaySeconds: 1
+          periodSeconds: 5
+        startupProbe:
+          httpGet:
+            path: /health
+            port: server-port
+            httpHeaders:
+              - name: k8s-startup-header
+                value: Startup
+          failureThreshold: 30
+          periodSeconds: 5
+        env:
+        - name: APP_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: server-env-vars
+              key: app.port
+        - name: TEST_ENV_VARIABLE
+          valueFrom:
+            configMapKeyRef:
+              name: server-env-vars
+              key: test.env.var
+        - name: SECRET_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: server-env-secret
+              key: username
+        - name: SECRET_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: server-env-secret
+              key: password
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: server-env-secret
+              key: redis.url
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: server-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: server
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 3000

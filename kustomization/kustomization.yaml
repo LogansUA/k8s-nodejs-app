@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: development
+
+resources:
+- namespace-dev.yaml
+- redis.yaml
+- server.yaml
+
+configMapGenerator:
+- name: server-env-vars
+  envs:
+  - ./server-config-map.env
+secretGenerator:
+- name: server-env-secret
+  envs:
+  - ./server-secret.env
