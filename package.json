@@ -5,11 +5,13 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "start:local": "REDIS_URL=redis://0.0.0.0:6379 node index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "express": "^4.18.2",
     "redis": "^4.6.4"
   }
 }
